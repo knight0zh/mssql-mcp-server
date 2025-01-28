@@ -1,0 +1,39 @@
+# Use Node.js LTS version
+FROM node:20-slim
+
+# Install SQL Server tools for health checks and debugging
+RUN apt-get update && apt-get install -y \
+    gnupg \
+    curl \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql18 mssql-tools18 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose port if needed
+EXPOSE 3000
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV PATH="/app/node_modules/.bin:${PATH}"
+
+# Use nodemon for development
+RUN npm install -g nodemon ts-node
+
+# Command to run the application
+CMD ["npm", "run", "dev"]

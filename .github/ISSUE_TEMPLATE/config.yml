@@ -1,0 +1,29 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/yourusername/mssql-mcp-server/tree/main/docs
+    about: Check our documentation for answers to common questions
+  - name: Security Issues
+    url: https://github.com/yourusername/mssql-mcp-server/blob/main/SECURITY.md
+    about: Please report security vulnerabilities as described in our security policy
+  - name: Discussions
+    url: https://github.com/yourusername/mssql-mcp-server/discussions
+    about: Ask questions and discuss with other community members
+  - name: Contributing Guidelines
+    url: https://github.com/yourusername/mssql-mcp-server/blob/main/docs/CONTRIBUTING.md
+    about: Review our contributing guidelines before submitting a PR
+
+# Template chooser settings
+# This section configures how the template chooser appears
+chooser:
+  title: Issue Templates
+  description: |
+    Please choose the appropriate template for your issue.
+    For security vulnerabilities, please follow our security policy.
+  preview: true
+  required: true
+  labels:
+    - bug: '🐛 Bug Report'
+    - enhancement: '✨ Feature Request'
+    - documentation: '📚 Documentation'
+    - question: '❓ Question'
