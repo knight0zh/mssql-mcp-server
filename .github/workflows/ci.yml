@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -12,56 +12,111 @@ jobs:
 
     services:
       mssql:
-        image: mcr.microsoft.com/mssql/server:2022-latest
+        image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
         env:
           ACCEPT_EULA: Y
           SA_PASSWORD: YourTestPassword123!
+          MSSQL_PID: Developer
+          MSSQL_TCP_PORT: 1433
         ports:
           - 1433:1433
         options: >-
-          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourTestPassword123! -Q 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd="/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourTestPassword123!' -Q 'SELECT 1' || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+          --health-start-period=20s
+          --memory=2048MB
 
     strategy:
       matrix:
         node-version: [18.x, 20.x]
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run linter
-      run: npm run lint
-    
-    - name: Run tests
-      run: npm test
-      env:
-        MSSQL_HOST: localhost
-        MSSQL_PORT: 1433
-        MSSQL_USER: sa
-        MSSQL_PASSWORD: YourTestPassword123!
-        MSSQL_DATABASE: master
-        MSSQL_ENCRYPT: false
-        MSSQL_TRUST_SERVER_CERTIFICATE: true
-    
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: true
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Install required tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y netcat curl gnupg2
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+          curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev
+          echo "/opt/mssql-tools18/bin" >> $GITHUB_PATH
+
+      - name: Verify SQL Tools Installation
+        run: |
+          which sqlcmd
+          sqlcmd --version
+
+      - name: Check SQL Server container
+        run: |
+          docker ps
+          docker logs $(docker ps -q --filter "ancestor=mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04")
+
+      - name: Verify network connectivity
+        run: |
+          echo "Testing connection to SQL Server..."
+          for i in {1..5}; do
+            if nc -zv localhost 1433; then
+              echo "Port 1433 is open"
+              break
+            fi
+            echo "Attempt $i: Port not ready, waiting..."
+            sleep 5
+          done
+
+          echo "Testing SQL Server connection from container..."
+          docker exec $(docker ps -q --filter "ancestor=mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04") \
+            /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'YourTestPassword123!' \
+            -Q 'SELECT @@VERSION' || exit 1
+
+      - name: Wait for SQL Server
+        timeout-minutes: 5
+        run: |
+          until sqlcmd -S localhost -U sa -P 'YourTestPassword123!' -Q 'SELECT 1' &> /dev/null
+          do
+            echo "Waiting for SQL Server to be ready..."
+            sleep 5
+          done
+          echo "SQL Server is ready"
+
+      - name: Verify SQL Server
+        run: |
+          sqlcmd -S localhost -U sa -P 'YourTestPassword123!' -Q 'SELECT @@VERSION'
+
+      - name: Run tests
+        run: npm test
+        env:
+          MSSQL_HOST: localhost
+          MSSQL_PORT: 1433
+          MSSQL_USER: sa
+          MSSQL_PASSWORD: 'YourTestPassword123!'
+          MSSQL_DATABASE: master
+          MSSQL_ENCRYPT: false
+          MSSQL_TRUST_SERVER_CERTIFICATE: true
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
 
   build:
     runs-on: ubuntu-latest
@@ -69,26 +124,26 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build
-      run: npm run build
-    
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: build
-        path: build/
-        retention-days: 7
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build/
+          retention-days: 7
 
   release:
     runs-on: ubuntu-latest
@@ -98,31 +153,31 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    
-    - name: Download build artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: build
-        path: build/
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        registry-url: 'https://registry.npmjs.org'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Create Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        VERSION=$(node -p "require('./package.json').version")
-        gh release create v$VERSION \
-          --title "v$VERSION" \
-          --notes "See [CHANGELOG.md](CHANGELOG.md) for details." \
-          --draft
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: build/
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          gh release create v$VERSION \
+            --title "v$VERSION" \
+            --notes "See [CHANGELOG.md](CHANGELOG.md) for details." \
+            --draft

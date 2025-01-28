@@ -1,133 +1,40 @@
 ---
-name: Feature Request
+name: Feature request
 about: Suggest an idea for this project
-title: '[FEATURE] '
+title: ''
 labels: enhancement
 assignees: ''
 ---
 
-## Feature Description
+## Problem Statement
 
-<!-- A clear and concise description of the feature you'd like to see -->
-
-## Use Case
-
-<!-- Describe the use case(s) for this feature -->
-
-## Current Workaround
-
-<!-- Is there a current workaround? If so, please describe it -->
+<!-- A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
 
 ## Proposed Solution
 
-<!-- Describe your proposed solution -->
+<!-- A clear and concise description of what you want to happen -->
 
-### API Design
+## Alternative Solutions
 
-<!-- If applicable, provide a proposed API design -->
+<!-- A clear and concise description of any alternative solutions or features you've considered -->
+
+## Example Usage
+
+<!-- If applicable, provide example code or usage scenarios -->
 
 ```typescript
 // Example code showing how the feature would be used
 ```
 
-### Configuration
-
-<!-- If applicable, describe any configuration options -->
-
-```json
-{
-  "feature": {
-    "option1": "value1",
-    "option2": "value2"
-  }
-}
-```
-
-## SQL Server Considerations
-
-<!-- Any SQL Server specific considerations or requirements -->
-
-## Security Implications
-
-<!-- Describe any security implications or considerations -->
-
-- [ ] Authentication/Authorization impact
-- [ ] Data security considerations
-- [ ] Input validation requirements
-- [ ] Network security implications
-
-## Performance Considerations
-
-<!-- Describe any performance implications -->
-
-- [ ] Query performance impact
-- [ ] Memory usage considerations
-- [ ] Network overhead
-- [ ] Resource utilization
-
-## Breaking Changes
-
-<!-- Would this feature introduce any breaking changes? -->
-
-- [ ] API changes
-- [ ] Configuration changes
-- [ ] Behavior changes
-- [ ] Database schema changes
-
-## Implementation Details
-
-<!-- If you have thoughts on implementation, describe them here -->
-
-### Required Changes
-
-- [ ] Core functionality
-- [ ] API endpoints
-- [ ] Database schema
-- [ ] Configuration
-- [ ] Documentation
-
-### Dependencies
-
-<!-- List any new dependencies that would be required -->
-
-## Documentation Requirements
-
-<!-- What documentation would need to be created or updated? -->
-
-- [ ] API documentation
-- [ ] Configuration guide
-- [ ] Usage examples
-- [ ] Migration guide
-
-## Testing Requirements
-
-<!-- Describe how this feature should be tested -->
-
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Performance tests
-- [ ] Security tests
-
-## Alternatives Considered
-
-<!-- What alternatives have you considered? -->
-
 ## Additional Context
 
-<!-- Add any other context or screenshots about the feature request here -->
+<!-- Add any other context, screenshots, or examples about the feature request here -->
 
-## Related Issues
+## Acceptance Criteria
 
-<!-- Link to related issues if any -->
+<!-- List the requirements that need to be met for this feature to be considered complete -->
 
-## Implementation Checklist
-
-<!-- For project maintainers -->
-
-- [ ] Feature scope defined
-- [ ] API design reviewed
-- [ ] Security implications assessed
-- [ ] Performance impact evaluated
-- [ ] Breaking changes documented
-- [ ] Testing requirements defined
-- [ ] Documentation requirements identified
+- [ ] Requirement 1
+- [ ] Requirement 2
+- [ ] Tests added/updated
+- [ ] Documentation updated
