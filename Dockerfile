@@ -47,7 +47,7 @@ ENV NODE_ENV=production
 ENV PATH="/app/node_modules/.bin:${PATH}"
 
 # Make the application executable
-RUN chmod +x build/index.js
+RUN chmod +x build/src/index.js
 
 # Command to run the application
-CMD ["node", "build/index.js"]
+CMD ["node", "build/src/index.js"]
