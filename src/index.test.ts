@@ -55,7 +55,10 @@ describe('MssqlServer', () => {
       const mockPool = new (await import('mssql')).default.ConnectionPool(
         mockConfig
       ) as unknown as MockPool;
-      const querySpy = vi.spyOn(mockPool.request(), 'query').mockResolvedValue(mockResult);
+      
+      // Fix the type error by using any type
+      const querySpy = vi.spyOn(mockPool.request() as any, 'query');
+      querySpy.mockResolvedValue(mockResult);
 
       const response = await server.handleQuery({
         connectionString: 'Server=localhost;Database=test;User Id=sa;Password=test;',
@@ -75,7 +78,10 @@ describe('MssqlServer', () => {
       const mockPool = new (await import('mssql')).default.ConnectionPool(
         mockConfig
       ) as unknown as MockPool;
-      const querySpy = vi.spyOn(mockPool.request(), 'query').mockResolvedValue(mockResult);
+      
+      // Fix the type error by using any type
+      const querySpy = vi.spyOn(mockPool.request() as any, 'query');
+      querySpy.mockResolvedValue(mockResult);
 
       const response = await server.handleQuery({
         host: 'localhost',
@@ -108,7 +114,10 @@ describe('MssqlServer', () => {
         mockConfig
       ) as unknown as MockPool;
       const mockError = new Error('Database error');
-      const querySpy = vi.spyOn(mockPool.request(), 'query').mockRejectedValue(mockError);
+      
+      // Fix the type error by using any type
+      const querySpy = vi.spyOn(mockPool.request() as any, 'query');
+      querySpy.mockRejectedValue(mockError);
 
       const promise = server.handleQuery({
         host: 'localhost',
