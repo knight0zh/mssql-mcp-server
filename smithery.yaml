@@ -1,0 +1,69 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required: []
+    properties:
+      connectionString:
+        type: string
+        description: Full MSSQL connection string. If provided, individual connection
+          parameters are ignored.
+      host:
+        type: string
+        description: Database server hostname.
+      port:
+        type: number
+        default: 1433
+        description: Database server port.
+      database:
+        type: string
+        default: master
+        description: Database name.
+      username:
+        type: string
+        description: Database username.
+      password:
+        type: string
+        description: Database password.
+      encrypt:
+        type: boolean
+        default: false
+        description: Enable encryption if true.
+      trustServerCertificate:
+        type: boolean
+        default: true
+        description: Whether to trust the server certificate.
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => {
+      const env = {};
+      if (config.connectionString) {
+        env.MSSQL_CONNECTION_STRING = config.connectionString;
+      } else {
+        if (config.host) env.MSSQL_HOST = config.host;
+        if (config.port) env.MSSQL_PORT = config.port.toString();
+        if (config.database) env.MSSQL_DATABASE = config.database;
+        if (config.username) env.MSSQL_USER = config.username;
+        if (config.password) env.MSSQL_PASSWORD = config.password;
+        if (config.encrypt !== undefined) env.MSSQL_ENCRYPT = config.encrypt.toString();
+        if (config.trustServerCertificate !== undefined) env.MSSQL_TRUST_SERVER_CERTIFICATE = config.trustServerCertificate.toString();
+      }
+      return {
+        command: 'node',
+        args: ['build/src/index.js'],
+        env
+      };
+    }
+  exampleConfig:
+    connectionString: Server=localhost;Database=master;User Id=sa;Password=yourpassword;
+    host: localhost
+    port: 1433
+    database: master
+    username: sa
+    password: yourpassword
+    encrypt: false
+    trustServerCertificate: true
